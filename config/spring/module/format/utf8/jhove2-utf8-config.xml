@@ -176,7 +176,12 @@
 		<property name="author" value="Unicode Consortium"/>
 		<property name="date" value="2007"/>
 		<property name="edition" value="Version 5.1.0"/>
-		<property name="identifier" ref="UnicodeSpecificationURI"/>
+<!--		<property name="identifier" ref="UnicodeSpecificationURI"/>-->
+		<property name="identifiers">
+			<list value-type="org.jhove2.core.I8R">
+				<ref bean="UnicodeSpecificationURI"/>
+			</list>
+		</property>
 		<property name="publisher" value="Addison-Wesley"/>
 	</bean>	
 	<!-- Unicode specification URI bean -->
@@ -190,7 +195,12 @@
 		<constructor-arg type="org.jhove2.core.Document$Type" value="Standard"/>
 		<constructor-arg type="org.jhove2.core.Document$Intention" value="Informative"/>
 		<property name="date" value="2003"/>
-		<property name="identifier" ref="ISO10646"/>
+<!--		<property name="identifier" ref="ISO10646"/>-->
+		<property name="identifiers">
+			<list value-type="org.jhove2.core.I8R">
+				<ref bean="ISO10646"/>
+			</list>
+		</property>
 		<property name="publisher" value="ISO"/>
 	</bean>	
 	<!-- ISO 10646 identifier bean -->
@@ -229,7 +239,12 @@
 	<bean id="UTF8Module" class="org.jhove2.module.format.utf8.UTF8Module"
 	      scope="prototype">
 	    <constructor-arg ref="UTF8Format"/>
-	    <property name="profile" ref="ASCIIProfile"/>
+<!--	    <property name="profile" ref="ASCIIProfile"/>-->
+		<property name="profiles">
+			<list value-type="org.jhove2.module.format.FormatProfile">
+				<ref bean="ASCIIProfile"/>
+			</list>
+		</property>
 	     <property name="developers">
 			<list value-type="org.jhove2.core.Agent">
 				<ref bean="CDLAgent"/>
@@ -238,19 +253,17 @@
 	</bean>
 	
 	
-	
-	<!-- C0 Control properties bean -->
-	<util:properties id="C0Control"	
-		             location="classpath:properties/unicode/c0control.properties"/>
-	
-	<!-- C1 Control properties bean -->
-	<util:properties id="C1Control"	
-		             location="classpath:properties/unicode/c1control.properties"/>
 
-	<!-- Codeblock properties bean -->
-	<util:properties id="CodeBlock"	
-		             location="classpath:properties/unicode/codeblock.properties"/>
-		
-	
+	<!-- C0 Control properties bean -->		
+	   <bean id="C0Control" class="org.jhove2.config.spring.ModulePropertiesFactoryBean">
+  		<property name="propertyFileBaseName" value="C0Control"/>
+   </bean>      
+	   <bean id="C1Control" class="org.jhove2.config.spring.ModulePropertiesFactoryBean">
+  		<property name="propertyFileBaseName" value="C1Control"/>
+   </bean>      
+	   <bean id="CodeBlock" class="org.jhove2.config.spring.ModulePropertiesFactoryBean">
+  		<property name="propertyFileBaseName" value="CodeBlock"/>
+   </bean>      
+ 
 	   
 </beans>		   

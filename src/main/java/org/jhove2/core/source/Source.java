@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jhove2.annotation.ReportableProperty;
@@ -84,7 +85,8 @@ public interface Source
 
 	/**
 	 * Add a module that processed the source unit.
-	 * 
+	 * Generic modules are only add once, to the first Source upon which they are invoked
+	 * Specific modules are added to each Source upon which they are invoked
 	 * @param module
 	 *            Module that processed the source unit
 	 */
@@ -209,6 +211,11 @@ public interface Source
 	public Set<FormatIdentification> getPresumptiveFormats();
 	
 	/**
+	 * Get Map of per-source parameters
+	 * @return Map of per-source parameter name/parameter value pairs
+	 */
+	public Map<String, String> getSourceParams();
+	/**
 	 * Get elapsed time processing this source unit.
 	 * @return Elapsed time
 	 */
@@ -235,4 +242,10 @@ public interface Source
 	 * @param fi Set of presumptive formats
 	 */
 	public void setPresumptiveFormats(Set<FormatIdentification> fi);
+	
+	/**
+	 * Set Map of per-source parameters
+	 * @param sourceParams Map of per-source parameter name/parameter value pairs
+	 */
+	public void setSourceParams(Map<String, String> sourceParams);
 }

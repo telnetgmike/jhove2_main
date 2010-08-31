@@ -37,7 +37,6 @@
 
 package org.jhove2.module.format.xml;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

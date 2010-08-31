@@ -36,14 +36,14 @@
  */
 package org.jhove2.module.format.xml;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
 import org.jhove2.module.format.Validator.Validity;
-
 import org.junit.Before;
 import org.junit.Test;
 

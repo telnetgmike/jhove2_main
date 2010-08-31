@@ -1,6 +1,8 @@
 package org.jhove2.module.assess;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -24,6 +26,9 @@ public class AssessmentResultSetTest1 {
     /* The AssessmentResultSet whose  being examined */
     private AssessmentResultSet resultSet = new AssessmentResultSet();
 
+    /* The Assessed Object */
+    private Object assessedObject = new Object();
+
     /* Construct a RuleSet object using Spring */
     @Resource(name = "MockModuleRuleSet1")
     public void setRuleSet(RuleSet ruleSet)  {
@@ -33,7 +38,7 @@ public class AssessmentResultSetTest1 {
     /* Construct a Module object using Spring */
     @Resource(name = "MockModule")
     public void setAssessedObject(MockModule assessedObject)  {
-        resultSet.setAssessedObject(assessedObject);
+        this.assessedObject = assessedObject;
     }
 
     @Test
@@ -59,14 +64,13 @@ public class AssessmentResultSetTest1 {
 
     @Test
     public void testGetAssessedObject() {
-        Object assessedObject = resultSet.getAssessedObject();
         assertTrue(assessedObject instanceof MockModule);
     }
     
     @Test
     public void testFireAllRules() {
         try {
-            resultSet.fireAllRules();
+            resultSet.fireAllRules(assessedObject);
             assertEquals(Validity.True,resultSet.assessmentResults.get(0).getBooleanResult());
             assertEquals(Validity.True,resultSet.assessmentResults.get(1).getBooleanResult());
             assertEquals(Validity.True,resultSet.assessmentResults.get(2).getBooleanResult());

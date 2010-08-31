@@ -49,7 +49,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -74,6 +76,10 @@ public abstract class AbstractSource
 	extends AbstractReportable
 	implements Source, Comparable<Source>
 {
+	/** Identifiers of generic modules registered with the Source. */
+	protected static Set<String> moduleIDs = new HashSet<String>();
+	
+	
 	/** Child source units. */
 	protected List<Source> children;
 
@@ -102,6 +108,11 @@ public abstract class AbstractSource
      * Timer info  used to track elapsed time for running of this module
      */
     protected TimerInfo timerInfo;
+    
+    /**
+     * Mechanism for providing per-source information
+     */
+    protected Map<String, String>sourceParams;
     
 	/**
 	 * Instantiate a new <code>AbstractSource</code>.
@@ -168,14 +179,24 @@ public abstract class AbstractSource
 
 	/**
 	 * Add a module that processed the source unit.
-	 * 
+	 * Generic modules are only add once, to the first Source upon which they are invoked
+	 * Specific modules are added to each Source upon which they are invoked
 	 * @param module
 	 *            Module that processed the source unit
 	 * @see org.jhove2.core.source.Source#addModule(org.jhove2.module.Module)
 	 */
 	@Override
 	public void addModule(Module module) {
-		this.modules.add(module);
+		if (module.getScope()== Module.Scope.Specific){
+			this.modules.add(module);
+		}
+		else {
+			String id = module.getReportableIdentifier().toString();
+			if (!moduleIDs.contains(id)) {
+					moduleIDs.add(id);
+					this.modules.add(module);
+			}
+        }
 	}
 	
 	/** Add a presumptively-identified format for this source unit.
@@ -276,6 +297,16 @@ public abstract class AbstractSource
 	@Override
 	public List<Source> getChildSources() {
 		return this.children;
+	}
+
+	
+	/**
+	 * Get Map of per-source parameters
+	 * @return Map of per-source parameter name/parameter value pairs
+	 */
+	@Override
+	public Map<String, String> getSourceParams() {
+		return sourceParams;
 	}
 
 	/**
@@ -422,6 +453,7 @@ public abstract class AbstractSource
 		return this.isTemp;
 	}
 
+	
 	/**
 	 * Set delete temporary files flag; if true, delete files.
 	 * 
@@ -441,6 +473,15 @@ public abstract class AbstractSource
 	@Override
 	public void setPresumptiveFormats(Set<FormatIdentification> formatIdentifications) {
 		this.presumptiveFormatIdentifications = formatIdentifications;
+	}
+
+	/**
+	 * Set Map of per-source parameters
+	 * @param sourceParams Map of per-source parameter name/parameter value pairs
+	 */
+	@Override
+	public void setSourceParams(Map<String, String> sourceParams) {
+		this.sourceParams = sourceParams;
 	}
 
 	/**
@@ -594,4 +635,6 @@ public abstract class AbstractSource
 
 		return (thisChildSize == containsCount);
 	}
+
+
 }

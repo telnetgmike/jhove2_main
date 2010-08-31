@@ -24,18 +24,35 @@
 		<constructor-arg type="java.lang.String" 
 	        value="examples/"/>
 	</bean>
-		<bean id="droidDirBasePath" class="java.lang.String" >
+	
+	<bean id="droidDirBasePath" class="java.lang.String" >
 		<constructor-arg type="java.lang.String" 
 	        value="examples/droid/"/>
 	</bean>
-		<bean id="utf8DirBasePath" class="java.lang.String" >
+	
+	<bean id="utf8DirBasePath" class="java.lang.String" >
 		<constructor-arg type="java.lang.String" 
 	        value="examples/utf8/"/>
 	</bean>
 	
-		<bean id="xmlDirBasePath" class="java.lang.String" >
+	<bean id="tiffDirBasePath" class="java.lang.String" >
+		<constructor-arg type="java.lang.String" 
+	        value="examples/tiff/"/>
+	</bean>
+	
+	<bean id="xmlDirBasePath" class="java.lang.String" >
 		<constructor-arg type="java.lang.String" 
 	        value="examples/xml/"/>
+	</bean>
+	
+	<bean id="sgmlDirBasePath" class="java.lang.String" >
+		<constructor-arg type="java.lang.String" 
+	        value="examples/sgml/"/>
+	</bean>
+	
+	<bean id="tempDirBasePath" class="java.lang.String" >
+		<constructor-arg type="java.lang.String" 
+	        value="examples/temp/"/>
 	</bean>
 
 </beans>

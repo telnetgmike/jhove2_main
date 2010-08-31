@@ -291,10 +291,10 @@ public abstract class AbstractInput implements Input {
 	}
 
 	/**
-	 * Get unsigned (four byte) integer at the current position. This implicitly
+	 * Get signed (four byte) integer at the current position. This implicitly
 	 * advances the current position by four bytes.
 	 * 
-	 * @return Unsigned short integer at the current position, or -1 if EOF
+	 * @return signed integer at the current position, or -1 if EOF
 	 * @see org.jhove2.core.io.Input#readUnsignedInt()
 	 */
 	@Override
@@ -343,7 +343,7 @@ public abstract class AbstractInput implements Input {
 	 * Get signed long integer at the current position. This implicitly advances
 	 * the current position by eight bytes.
 	 * 
-	 * @return Unsigned short integer at the current position, or -1 if EOF
+	 * @return signed long integer at the current position, or -1 if EOF
 	 * @see org.jhove2.core.io.Input#readSignedLong()
 	 */
 	@Override
@@ -381,7 +381,7 @@ public abstract class AbstractInput implements Input {
 				}
 			}
 		} else {
-			in = this.buffer.getShort();
+			in = this.buffer.getLong();
 		}
 		this.inputablePosition += 8L;
 
@@ -389,10 +389,10 @@ public abstract class AbstractInput implements Input {
 	}
 
 	/**
-	 * Get signed (short integer at the current position. This implicitly
+	 * Get signed short integer at the current position. This implicitly
 	 * advances the current position by two bytes.
 	 * 
-	 * @return Unsigned short integer at the current position, or -1 if EOF
+	 * @return Signed short integer at the current position, or -1 if EOF
 	 * @see org.jhove2.core.io.Input#readSignedShort()
 	 */
 	@Override

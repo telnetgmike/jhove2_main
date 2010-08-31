@@ -42,8 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jhove2.core.JHOVE2Exception;
-import org.jhove2.module.assess.RuleSetFactory;
 import org.jhove2.module.assess.RuleSet;
+import org.jhove2.module.assess.RuleSetFactory;
 
 /**
  * Spring-based implementation of

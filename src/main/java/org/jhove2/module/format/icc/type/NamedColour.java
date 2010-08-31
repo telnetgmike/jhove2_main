@@ -46,7 +46,7 @@ public class NamedColour
     protected List<Integer> deviceCoordinates;
     
     /** Profile Connection Space (PCS) coordinates. */
-    protected List<Integer> pcsCoordinates;
+    protected PCSNumber pcsCoordinates;
     
     /** Root name. */
     protected String rootName;
@@ -56,7 +56,7 @@ public class NamedColour
      * @param pcs    Profile Connection Space (PCS) coordinates
      * @param device Device coordinate
      */
-    public NamedColour(String root, List<Integer> pcs, List<Integer> device) {
+    public NamedColour(String root, PCSNumber pcs, List<Integer> device) {
         this.rootName          = root;
         this.pcsCoordinates    = pcs;
         this.deviceCoordinates = device;
@@ -72,7 +72,7 @@ public class NamedColour
     /** Get Profile Connection Space (PCS) coordinates.
      * @return PCS coordinates
      */
-    public List<Integer> getPCSCoordinates() {
+    public PCSNumber getPCSCoordinates() {
         return this.pcsCoordinates;
     }
     

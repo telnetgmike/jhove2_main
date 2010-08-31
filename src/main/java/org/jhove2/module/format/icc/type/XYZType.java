@@ -85,7 +85,7 @@ public class XYZType
         this.values  = new ArrayList<XYZNumber>();
     }
     
-    /** Parse an ICC signature tag type element.
+    /** Parse an ICC XYZ tag type element.
      * @param jhove2 JHOVE2 framework
      * @param input  ICC input
      * @param elementSize Size in bytes of the XYZ type element

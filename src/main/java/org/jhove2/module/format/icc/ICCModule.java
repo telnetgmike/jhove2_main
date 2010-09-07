@@ -43,7 +43,6 @@ import org.jhove2.annotation.ReportableProperty;
 import org.jhove2.core.Invocation;
 import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
-import org.jhove2.core.Message;
 import org.jhove2.core.format.Format;
 import org.jhove2.core.io.Input;
 import org.jhove2.core.source.Source;
@@ -58,13 +57,13 @@ public class ICCModule
         extends BaseFormatModule
         implements Validator
 {
-    /** Directory module version identifier. */
+    /** ICC module version identifier. */
     public static final String VERSION = "2.0.0";
 
-    /** Directory module release date. */
+    /** ICC module release date. */
     public static final String RELEASE = "2010-09-10";
 
-    /** Directory module rights statement. */
+    /** ICC module rights statement. */
     public static final String RIGHTS =
         "Copyright 2010 by The Regents of the University of California" +
         "Available under the terms of the BSD license.";
@@ -78,18 +77,9 @@ public class ICCModule
     /** ICC validation status. */
     protected Validity isValid;
 
-    /** The JHOVE2 object passed in by the parse method */
-    protected JHOVE2 jhove2; 
-
-    /** The Source object passed in by the parse method */
-    protected  Source source;
-    
     /** Profile tag table. */
     protected ICCTagTable tagTable;
-    
-    /** Premature EOF message. */
-    protected Message prematureEOFMessage;
-    
+ 
     /** Instantiate a new <code>ICCModule</code>
      * 
      * @param format ICC format
@@ -123,29 +113,29 @@ public class ICCModule
         long consumed = 0L;
         this.isValid = Validity.True;
         Input input = null;
-        try {
-            Invocation config = jhove2.getInvocation();
-            input = source.getInput(config.getBufferSize(), 
-                                    config.getBufferType());
-            input.setByteOrder(ByteOrder.BIG_ENDIAN);
-            input.setPosition(0L);
+        Invocation config = jhove2.getInvocation();
+        input = source.getInput(config.getBufferSize(), 
+                                config.getBufferType());
+        if (input != null) {
+            try {
+                input.setByteOrder(ByteOrder.BIG_ENDIAN);
+                input.setPosition(0L);
             
-            this.header = new ICCHeader();
-            consumed = header.parse(jhove2, input);
-            Validity validity = header.isValid();
-            if (validity != Validity.True) {
-                this.isValid = validity;
-            }
+                this.header = new ICCHeader();
+                consumed = header.parse(jhove2, input);
+                Validity validity = header.isValid();
+                if (validity != Validity.True) {
+                    this.isValid = validity;
+                }
                 
-            this.tagTable = new ICCTagTable();
-            consumed += tagTable.parse(jhove2, input,header);
-            validity = tagTable.isValid();
-            if (validity != Validity.True) {
-                this.isValid = validity;
+                this.tagTable = new ICCTagTable();
+                consumed += tagTable.parse(jhove2, input,header);
+                validity = tagTable.isValid();
+                if (validity != Validity.True) {
+                    this.isValid = validity;
+                }
             }
-        }
-        finally {
-            if (input != null) {
+            finally {
                 input.close();
             }
         }
@@ -162,10 +152,9 @@ public class ICCModule
     public Validity validate(JHOVE2 jhove2, Source source)
             throws JHOVE2Exception
     {
-        return this.isValid;
+        return this.isValid();
     }
     
-
     /** Get validation coverage.
      * @return Validation coverage
      * @see org.jhove2.module.format.Validator#getCoverage()
@@ -202,13 +191,6 @@ public class ICCModule
     @Override
     public Validity isValid()
     {
-        if (this.isValid == null) {
-            try {
-                this.validate(jhove2, source);
-            }
-            catch (JHOVE2Exception e) {
-            }
-        }
         return this.isValid;
     }
 }

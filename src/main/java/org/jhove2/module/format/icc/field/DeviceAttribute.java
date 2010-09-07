@@ -137,8 +137,8 @@ implements Comparable<DeviceAttribute>
     }
 
     /**
-     * Get the device attribute posative value.
-     * @return device attribute posative value
+     * Get the device attribute positive value.
+     * @return device attribute positive value
      */
     public String getPositiveValue() {
         return this.positiveValue;

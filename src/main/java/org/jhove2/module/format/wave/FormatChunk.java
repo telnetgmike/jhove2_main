@@ -46,6 +46,7 @@ import org.jhove2.core.Message.Severity;
 import org.jhove2.core.io.Input;
 import org.jhove2.module.format.Validator.Validity;
 import org.jhove2.module.format.riff.GenericChunk;
+import org.jhove2.module.format.wave.bwf.MPEGFormatHeader;
 import org.jhove2.module.format.wave.field.FormatCategory;
 
 /** WAVE chunk. Note that this class represents a generic WAVE chunk, not the
@@ -181,9 +182,15 @@ public class FormatChunk
     
     /** WAVE format chunk average bytes per second. */
     protected long avgBytesPerSec;
- 
+    
+    /** PCM format bits per sample. */
+    protected int bitsPerSample;
+   
     /** WAVE format chunk data block size. */
     protected int dataBlockSize;
+    
+    /** WAVE format chunk size of extra information, in bytes. */
+    protected int extraSize;
     
     /** WAVE format chunk format category in raw form. */
     protected int formatCategory;
@@ -194,18 +201,15 @@ public class FormatChunk
     /** WAVE format chunk invalid format category message. */
     protected Message invalidFormatCategoryMessage;
     
+    /** MPEG-1 header. */
+    protected MPEGFormatHeader mpeg;
+    
     /** WAVE format chunk number of channels. */
     protected int numChannels;
-    
-    /** PCM format bits per sample. */
-    protected int bitsPerSample;
-    
+  
     /** WAVE format chunk sampling rate. */
     protected long samplingRate;
-    
-    /** WAVE format chunk size of extra information, in bytes. */
-    protected int size;
-    
+ 
     /** Instantiate a new <code>FormatChunk</code>. */
     public FormatChunk() {
         super();
@@ -269,8 +273,13 @@ public class FormatChunk
         consumed += 2;
         
         if (this.formatCategory != WAVE_FORMAT_PCM) {
-            this.size = input.readUnsignedShort();
+            this.extraSize = input.readUnsignedShort();
             consumed += 2;
+            
+            if (this.formatCategory == WAVE_FORMAT_MPEG) {
+                this.mpeg = new MPEGFormatHeader();
+                consumed += this.mpeg.parse(jhove2, input);
+            }
         }
         
         return consumed;
@@ -297,7 +306,7 @@ public class FormatChunk
      */
     @ReportableProperty(order=8, value="Size of extra information, in bytes.")
     public int getSizeOfExtraInformation() {
-        return this.size;
+        return this.extraSize;
     }
     
     /** Get WAVE format chunk data block size.
@@ -330,6 +339,14 @@ public class FormatChunk
     @ReportableProperty(order=21, value="WAVE format chunk invalid format category message.")
     public Message getInvalidFormatCategoryMessage() {
         return this.invalidFormatCategoryMessage;
+    }
+    
+    /** Get MPEG-1 format header.
+     * @return MPEG-1 format header
+     */
+    @ReportableProperty(order=9, value="MPEG-1 format header.")
+    public MPEGFormatHeader getMPEGFormatHeader() {
+        return this.mpeg;
     }
     
     /** Get WAVE format chunk number of channels.

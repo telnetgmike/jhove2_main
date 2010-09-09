@@ -88,6 +88,9 @@ public abstract class AbstractSource
 
 	/** Source unit backing file. */
 	protected File file;
+	
+	/** Input. */
+	protected Input input;
 
 	/**
 	 * Source unit backing file temporary status: true if the source unit
@@ -321,8 +324,16 @@ public abstract class AbstractSource
 		return this.file;
 	}
 
+    /**
+     * Get existing {@link org.jhove2.core.io.Input} for the source unit.
+     * @return Input for the source unit
+     */
+    public Input getInput() {
+        return this.input;
+    }
+    
 	/**
-	 * Get {@link org.jhove2.core.io.Input} for the source unit. Concrete
+	 * Create and get {@link org.jhove2.core.io.Input} for the source unit. Concrete
 	 * classes extending this abstract class must provide an implementation of
 	 * this method if they are are based on parsable input. Classes without
 	 * parsable input (e.g. {@link org.jhove2.core.source.ClumpSource} or
@@ -347,7 +358,7 @@ public abstract class AbstractSource
 	}
 
 	/**
-	 * Get {@link org.jhove2.core.io.Input} for the source unit. Concrete
+	 * Create and get {@link org.jhove2.core.io.Input} for the source unit. Concrete
 	 * classes extending this abstract class must provide an implementation of
 	 * this method if they are are based on parsable input. Classes without
 	 * parsable input (e.g. {@link org.jhove2.core.source.ClumpSource} or
@@ -370,7 +381,9 @@ public abstract class AbstractSource
 	public Input getInput(int bufferSize, Type bufferType, ByteOrder order)
 		throws FileNotFoundException, IOException
 	{
-		return InputFactory.getInput(this.file, bufferSize, bufferType, order);
+		this.input = InputFactory.getInput(this.file, bufferSize, bufferType, order);
+		
+		return input;
 	}
 
 	/**

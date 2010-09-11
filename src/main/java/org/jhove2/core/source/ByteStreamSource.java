@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 import org.jhove2.annotation.ReportableProperty;
+import org.jhove2.core.JHOVE2;
 import org.jhove2.core.io.Input;
 import org.jhove2.core.io.Input.Type;
 
@@ -53,8 +54,8 @@ public class ByteStreamSource
         extends AbstractSource
 {
     /** Starting offset relative to parent source. */
-    protected long offset;
-    
+    protected long endingOffset;
+     
     /** Parent source. */
     protected Source parent;
     
@@ -63,26 +64,27 @@ public class ByteStreamSource
     
     /** Instantiate a new <code>ByteStreamSource</code>.  The new byte stream
      * is automatically added as a child reportable of its parent source unit.
-     * 
+     * @param jhove2 JHOVE2 framework
      * @param parent Parent source
      * @param offset Starting offset relative to parent
      * @param size   Size of the byte stream
      * @throws IOException 
      */
-    public ByteStreamSource(Source parent, long offset, long size)
+    public ByteStreamSource(JHOVE2 jhove2, Source parent, long offset, long size)
         throws IOException
     {
         super();
         
-        this.parent = parent;
-        this.offset = offset;
-        this.size   = size;
+        this.parent         = parent;
+        this.startingOffset = offset;
+        this.endingOffset   = offset + size;
+        this.size           = size;
         
         /* Make this byte stream a child of its parent. */
         parent.addChildSource(this);
         
         /* Re-use the existing open input of the parent. */
-        this.input  = parent.getInput();
+        this.input  = parent.getInput(jhove2);
         
         /* Set the position to the start of the byte stream. */
         this.input.setPosition(offset);
@@ -114,18 +116,18 @@ public class ByteStreamSource
         return this.input;
     }
 
-    /** Get starting offset of the byte stream, relative to its parent.
-     * @return Starting offset
+    /** Get ending offset of the byte stream, relative to its parent.
+     * @return Ending offset
      */
-    @ReportableProperty(order=1, value="Starting offset of the byte stream, relative to its parent.")
-    public long getStartingOffset() {
-        return this.offset;
+    @ReportableProperty(order=2, value="Ending offset of the byte stream, relative to its parent.")
+    public long getEndingOffset() {
+        return this.endingOffset;
     }
-    
+     
     /** Get byte stream size, in bytes.
      * @return Byte stream size
      */
-    @ReportableProperty(order=2, value="Byte stream size, in bytes.")
+    @ReportableProperty(order=1, value="Byte stream size, in bytes.")
     public long getSize() {
         return this.size;
     }

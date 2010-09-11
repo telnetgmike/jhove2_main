@@ -79,8 +79,7 @@ public abstract class AbstractSource
 {
 	/** Identifiers of generic modules registered with the Source. */
 	protected static Set<String> moduleIDs = new HashSet<String>();
-	
-	
+
 	/** Child source units. */
 	protected List<Source> children;
 
@@ -108,6 +107,9 @@ public abstract class AbstractSource
 	/** Presumptive identifications for the source unit. */
 	protected Set<FormatIdentification> presumptiveFormatIdentifications;
     
+	/** Starting offset, in bytes. */
+	protected long startingOffset;
+	
     /**
      * Timer info  used to track elapsed time for running of this module
      */
@@ -127,6 +129,7 @@ public abstract class AbstractSource
 		this.messages        = new ArrayList<Message>();
 		this.modules         = new ArrayList<Module>();
 		this.presumptiveFormatIdentifications = new TreeSet<FormatIdentification>();
+		this.startingOffset  = 0L;
         this.timerInfo       = new TimerInfo();
 	}
 
@@ -482,7 +485,16 @@ public abstract class AbstractSource
 	public Set<FormatIdentification> getPresumptiveFormats() {
 		return presumptiveFormatIdentifications;
 	}
-
+    
+    /** Get starting offset of the source unit, in bytes.
+     * @return Starting offset of the source unit
+     * Except for {@link ByteStreamSource}s, this will generally be 0.
+     */
+    @Override
+    public long getStartingOffset() {
+        return this.startingOffset;
+    }
+    
 	/**
 	 * Get elapsed time processing the source unit.
 	 * @return Elapsed time

@@ -89,6 +89,7 @@ public class ICCModule
         this.isValid = Validity.Undetermined;
     }
     
+
     /** 
      * Parse an ICC source unit.
      * 
@@ -115,16 +116,21 @@ public class ICCModule
         if (input != null) {
             input.setPosition(0L);
             try {
+                long start = 0L;
+                if ((start = input.getPosition()) == 0) {
+                    input.setPosition(0L);
+                }
                 this.header = new ICCHeader();
-                consumed = header.parse(jhove2, source);
+                this.header.setOffset(start);
+                consumed += this.header.parse(jhove2, source);
                 Validity validity = header.isValid();
                 if (validity != Validity.True) {
                     this.isValid = validity;
                 }
                 
                 this.tagTable = new ICCTagTable();
-                consumed += tagTable.parse(jhove2, input,header);
-                validity = tagTable.isValid();
+                consumed += this.tagTable.parse(jhove2, source, header);
+                validity = this.tagTable.isValid();
                 if (validity != Validity.True) {
                     this.isValid = validity;
                 }

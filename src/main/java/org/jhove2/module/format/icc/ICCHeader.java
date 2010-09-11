@@ -37,6 +37,7 @@ package org.jhove2.module.format.icc;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -113,6 +114,9 @@ public class ICCHeader
   
     /** Header validity status. */
     protected Validity isValid;
+    
+    /** Offset of where ICC Header begins */
+    protected long offset;
     
     /** Preferred CMM type in raw form. */
     protected StringBuffer preferredCMM = new StringBuffer(4);
@@ -231,8 +235,8 @@ public class ICCHeader
      * 
      * @param jhove2
      *            JHOVE2 framework
-     * @param input
-     *            ICC input
+     * @param source
+     *            ICC source
      * @return Number of bytes consumed
      * @throws EOFException
      *             If End-of-File is reached reading the source unit
@@ -244,11 +248,10 @@ public class ICCHeader
     public long parse(JHOVE2 jhove2, Source source)
         throws EOFException, IOException, JHOVE2Exception
     {
-        Input input = source.getInput(jhove2);
-        
         long consumed = 0L;
         int numErrors = 0;
         this.isValid = Validity.True;
+        Input input  = source.getInput(jhove2, ByteOrder.BIG_ENDIAN);
         
         /* Profile size. */
         this.profileSize = input.readUnsignedInt();
@@ -389,6 +392,7 @@ public class ICCHeader
         cal.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.dateAndTime = cal.getTime();
         consumed += 12;
+        System.out.println("# DATE " + this.dateAndTime);
         
         /* Profile file signature. */
         for (int i=0; i<4; i++) {
@@ -787,6 +791,13 @@ public class ICCHeader
         return this.invalidRenderingIntentMessage;
     }
     
+    /** Get the offset where the ICC Header starts in the input
+     *  @return the offset
+     */
+    public long getOffset() {
+        return offset;
+    }
+
     /** Get non-zero data in reserved field error message.
      * @return Non-zero data in reserved field error message
      */
@@ -1015,5 +1026,12 @@ public class ICCHeader
     public Validity isValid()
     {
          return this.isValid;
+    }
+    
+    /**
+     * @param offset the offset to set
+     */
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 }

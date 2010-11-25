@@ -176,6 +176,7 @@ public class TiffModule
             byte[] b = new byte[2];
             b[0] = input.readSignedByte();
             b[1] = input.readSignedByte();
+            consumed +=2;
             ByteOrder byteOrder = null;
 
             /* validate first 2 bytes */
@@ -202,6 +203,7 @@ public class TiffModule
             input.setByteOrder(byteOrder);
 
             int magic = input.readUnsignedShort();
+            consumed +=2;
             if (magic != 43 && magic != 42) {
                 this.validity = Validity.False;
                 Object[]messageArgs = new Object[]{magic};
@@ -230,8 +232,8 @@ public class TiffModule
             this.prematureEOFMessage.add(new Message(Severity.ERROR,
                     Context.OBJECT,
                     "org.jhove2.module.format.tiff.TIFFModule.PrematureEOFMessage",
-                    jhove2.getConfigInfo()));       
-            throw new JHOVE2Exception("TiffModule.parse(): Premature EOFException", e);
+                    jhove2.getConfigInfo()));    
+            return consumed;
         }
         finally {
             this.jhove2 = null;

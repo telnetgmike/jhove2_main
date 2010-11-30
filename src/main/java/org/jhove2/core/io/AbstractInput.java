@@ -88,7 +88,7 @@ public abstract class AbstractInput
 
 	/** Size, in bytes. */
 	protected long fileSize;
-	
+
 	/** Buffer size, in bytes. */
 	protected int maxBufferSize;
 

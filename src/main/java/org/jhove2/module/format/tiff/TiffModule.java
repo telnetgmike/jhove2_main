@@ -232,7 +232,7 @@ public class TiffModule
             this.prematureEOFMessage.add(new Message(Severity.ERROR,
                     Context.OBJECT,
                     "org.jhove2.module.format.tiff.TIFFModule.PrematureEOFMessage",
-                    jhove2.getConfigInfo()));    
+                    jhove2.getConfigInfo()));       
             return consumed;
         }
         finally {

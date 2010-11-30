@@ -62,7 +62,7 @@ public class TiffIFD
 extends IFD 
 {    
     public static final int NULL = -1;
-
+    
     /** Partial list of Tiff Tags */
     public static final int
     ARTIST = 315,
@@ -162,7 +162,7 @@ extends IFD
 
     /* dot range out of range message */
     private Message dotRangeOutofRangeMessage;
-
+    
     /** flag indicating if Photometric Interpreation is present */
     boolean hasPhotometricInterpretation = false;
 
@@ -180,7 +180,7 @@ extends IFD
 
     /** indicates if TileOffsets tag present */
     private boolean hasTileOffsets;
-
+    
     /** indicates if TileWidth tag present */
     private boolean hasTileWidth;
 
@@ -270,7 +270,7 @@ extends IFD
 
     /** color map bit code value */
     private int[] colorMapBitCode = null;
-
+    
     /** color map red value */
     private int[] colorMapRed = null;
 
@@ -279,7 +279,7 @@ extends IFD
 
     /** color map blue value */
     private int[] colorMapBlue = null;
-
+    
     /** color map not defined for pallete color message */
     private Message colorMapNotDefinedForPalleteColorMessage;
 
@@ -356,39 +356,39 @@ extends IFD
     public void postParse() 
     {
         IFDEntry entry = null;
-
+    
         if ((entry = entries.get(RESOLUTIONUNIT)) != null) {
             this.resolutionUnit = ((Short) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(XRESOLUTION)) != null) {
             this.xResolution = (((Rational) entry.getValue()).toLong());
             hasXResolution = true;
-        }
+            }
         if ((entry = entries.get(YRESOLUTION)) != null) {
             this.yResolution = (Rational) entry.getValue();
             hasYResolution = true;
-        }
+            }
         if ((entry = entries.get(IMAGECOLORINDICATOR)) != null) {
             this.imageColorIndicator = ((Byte) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(ORIENTATION)) != null) {
             this.orientation = ((Short) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(BACKGROUNDCOLORINDICATOR)) != null) {
             this.backgroundColorIndicator = ((Short) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(INDEXED)) != null) {
             this.indexed = ((Short) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(FILLORDER)) != null) {
             this.fillOrder = ((Short) entry.getValue()).getValue();
-        }
+            }
         if ((entry = entries.get(ROWSPERSTRIP)) != null) {
             this.rowsPerStrip = ((Long) entry.getValue()).getValue();
             hasRowsPerStrip = true;
-        }
+            }
     }
-
+    
     public Validity validate(JHOVE2 jhove2, Source source) throws JHOVE2Exception, FileNotFoundException, IOException
     {
         IFDEntry entry = null;
@@ -1241,7 +1241,7 @@ extends IFD
     public boolean hasXResolution() {
         return this.hasXResolution;
     }
-
+    
     /**
      * 
      * @return boolean hasYResolution 

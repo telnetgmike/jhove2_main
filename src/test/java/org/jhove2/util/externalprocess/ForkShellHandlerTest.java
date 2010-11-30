@@ -75,6 +75,7 @@ public class ForkShellHandlerTest {
 	protected FilepathFilter filter;
 	public static final String HELLO = "HELLO";
 	public static final String COMMANDBASE = "echo " + HELLO +  ">";
+	public static final String INVALIDSHELL = "nosuchfile.noext";
 	protected String wtempDirBasePath;
 	protected String wtempDirPath;
 	protected File wtempFile;
@@ -121,6 +122,9 @@ public class ForkShellHandlerTest {
 		} catch (JHOVE2Exception e) {
 			e.printStackTrace();
 			fail("Shell Handler threw exception");
+		} catch (NoSuchShellEnvException e) {
+			e.printStackTrace();
+			fail("Shell Handler threw NoSuchShellEnvException");
 		}
 		assertTrue(tempFile.exists());
 		long lngth = tempFile.length();
@@ -158,6 +162,9 @@ public class ForkShellHandlerTest {
 			command = COMMANDBASE + wtempFilePath ;
 			try {
 				windowsShellHandler.executeCommand(command);
+			} catch (NoSuchShellEnvException e) {
+				e.printStackTrace();
+				fail("Shell Handler threw NoSuchShellEnvException");
 			} catch (JHOVE2Exception e) {
 				e.printStackTrace();
 				fail("Shell Handler threw exception");
@@ -191,6 +198,17 @@ public class ForkShellHandlerTest {
 			};
 			strContents = fileContents.toString();
 			assertEquals(HELLO, strContents);
+		}
+		command = COMMANDBASE + tempFilePath ;
+		shellHandler.setShellEnv(INVALIDSHELL);
+		try {
+			shellHandler.executeCommand(command);
+			fail("Should not have worked");
+		} catch (JHOVE2Exception e) {
+			e.printStackTrace();
+			fail("Shell Handler threw exception");
+		} catch (NoSuchShellEnvException e) {
+			assertTrue(true);
 		}
 	}
 	/**

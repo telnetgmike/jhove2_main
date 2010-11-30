@@ -61,7 +61,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
 
     /** Profile rights statement. */
     public static final String RIGHTS = "Copyright 2010 by The Regents of the University of California. "
-        + "Available under the terms of the BSD license.";
+            + "Available under the terms of the BSD license.";
 
     /** Profile validation coverage. */
     public static final Coverage COVERAGE = Coverage.Inclusive;
@@ -84,7 +84,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
      */
     @Override
     public void validateThisProfile(JHOVE2 jhove2, TiffIFD ifd)
-    throws JHOVE2Exception {
+            throws JHOVE2Exception {
 
         /* Check required tags. */        
         int[] bps = ifd.getBitsPerSample();
@@ -136,8 +136,17 @@ public class TiffITHCP2Profile extends TiffItProfile {
         // bps must be ( =8... )
         bps = ifd.getBitsPerSample();
         if (bps != null) {
-            if (bps.length < 1) {
-                this.isValid = Validity.False;
+        if (bps.length < 1) {
+            this.isValid = Validity.False;
+            Object[] args = new Object[] { "(=8...)" };
+            this.invalidBPSValueMessage = new Message(
+                    Severity.WARNING,
+                    Context.OBJECT,
+                    "org.jhove2.module.format.tiff.profile.TIFFITProfile.InvalidBPSElementsMessage",
+                    args, jhove2.getConfigInfo());
+        }
+        else {
+            if (bps[0] != 8 ) {
                 Object[] args = new Object[] { "(=8...)" };
                 this.invalidBPSValueMessage = new Message(
                         Severity.WARNING,
@@ -145,16 +154,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                         "org.jhove2.module.format.tiff.profile.TIFFITProfile.InvalidBPSElementsMessage",
                         args, jhove2.getConfigInfo());
             }
-            else {
-                if (bps[0] != 8 ) {
-                    Object[] args = new Object[] { "(=8...)" };
-                    this.invalidBPSValueMessage = new Message(
-                            Severity.WARNING,
-                            Context.OBJECT,
-                            "org.jhove2.module.format.tiff.profile.TIFFITProfile.InvalidBPSElementsMessage",
-                            args, jhove2.getConfigInfo());
-                }
-            }
+        }
         }
 
         if (!isCompressionValid(ifd, 32897)) {
@@ -262,7 +262,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                         jhove2.getConfigInfo());
             }
         }
-
+        
         if (!isDotRangeValid(ifd, 0, 255)) {
             this.isValid = Validity.False;
             this.invalidDotRangeMessage = new Message(
@@ -271,7 +271,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                     "org.jhove2.module.format.tiff.profile.TIFFITProfile.InvalidDotRangeMessage",
                     jhove2.getConfigInfo());
         }
-
+        
         if ((entry = ifd.getEntries().get(TiffIFD.TRANSPARENCYINDICATOR)) != null) {
             short ti = ((Byte) entry.getValue()).getValue();
             if (!(ti == 0 || ti == 1)) {
@@ -295,7 +295,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                     "org.jhove2.module.format.tiff.profile.TIFFProfile.tagShouldNotBePresentMessage",
                     args, jhove2.getConfigInfo());
         }
-
+        
         if ((entry = ifd.getEntries().get(TiffIFD.MODEL)) != null) {
             this.isValid = Validity.False;
             Object[] args = new Object[] { entry.getName() };
@@ -305,7 +305,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                     "org.jhove2.module.format.tiff.profile.TIFFProfile.tagShouldNotBePresentMessage",
                     args, jhove2.getConfigInfo());
         }
-
+        
         if ((entry = ifd.getEntries().get(TiffIFD.PAGENAME)) != null) {
             this.isValid = Validity.False;
             Object[] args = new Object[] { entry.getName() };
@@ -315,7 +315,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                     "org.jhove2.module.format.tiff.profile.TIFFProfile.tagShouldNotBePresentMessage",
                     args, jhove2.getConfigInfo());
         }
-
+        
         if ((entry = ifd.getEntries().get(TiffIFD.HOSTCOMPUTER)) != null) {
             this.isValid = Validity.False;
             Object[] args = new Object[] { entry.getName() };
@@ -335,7 +335,7 @@ public class TiffITHCP2Profile extends TiffItProfile {
                     "org.jhove2.module.format.tiff.profile.TIFFProfile.tagShouldNotBePresentMessage",
                     args, jhove2.getConfigInfo());
         }
-
+        
     }
 
     /**

@@ -66,7 +66,7 @@ public class URLSource
          * @param tmpPrefix
          * @param tmpSuffix
          * @param bufferSize
-         * @param url
+	 * @param url
 	 * @throws IOException
 	 */
 
@@ -161,7 +161,7 @@ public class URLSource
         return result;
     }
     
-    /** Compare to another source unit.
+	/** Compare to another source unit.
          * @param source
          * @return -1, 0, or 1 if the URL is less than, equals to, or greater than
 	 * the compared URL

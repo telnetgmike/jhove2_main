@@ -282,7 +282,7 @@ implements Comparable<Object> {
             this.savedValueOffset = input.getPosition();        // save the offset of the ValueOffset field 
             this.valueOffset = input.readUnsignedInt();         // read in the value stored in the ValueOffset field
             long value = this.valueOffset;
-            
+
             if (calcValueSize(this.type, this.count) > 4) {
                 /* the value read is the offset to the value */
                 long size = input.getSize();
@@ -321,7 +321,7 @@ implements Comparable<Object> {
                     I8R identifier = format.getIdentifier();
                     FormatIdentification presumptiveFormat = new FormatIdentification(identifier, Confidence.PositiveSpecific); 
                     bss.addPresumptiveFormat(presumptiveFormat);
-                    jhove2.characterize(bss, input);
+                    jhove2.characterize(bss, input);                
                 }
                 else {
                     readValues(input);

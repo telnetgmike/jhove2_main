@@ -78,11 +78,14 @@ import org.jhove2.module.format.tiff.type.Short;
 import org.jhove2.module.format.tiff.type.ShortArray;
 import org.jhove2.module.format.tiff.type.desc.Compression;
 
+import com.sleepycat.persist.model.Persistent;
+
 /** TIFF IFD entry.
  * 
  * @author mstrong
  *
  */
+@Persistent
 public class IFDEntry 
 extends AbstractReportable
 implements Comparable<Object> {
@@ -119,7 +122,8 @@ implements Comparable<Object> {
      *  used to read the value into the proper value type object */
     protected long savedValueOffset;
 
-    /** Contains the value iff the value is 4 or less bytes.  Otherwise is offset to value */
+    /** Contains the value iff the value is 4 or less bytes.  Otherwise is offset to value 
+     * Otherwise it is the offset of value */
     protected long valueOffset;
 
     /** TIFF Version - some field types define the TIFF version */
@@ -213,7 +217,6 @@ implements Comparable<Object> {
 
     /** invalid tile length not multiple of 16 message */
     private Message tileLengthNotMultipleof16Message;
-
 
     @ReportableProperty(order=6, value = "Entry value/offset.")
     public long getValueOffset() {
@@ -310,13 +313,15 @@ implements Comparable<Object> {
                 }
             }
 
+
             if (isValidTag(jhove2)) {
                 /* Handle tags which require unique processing of their values */
 
                 /* Parse the ICCProfile or XMP tag */
-                if (this.tag == TiffIFD.ICCPROFILE ||
+                 if (this.tag == TiffIFD.ICCPROFILE ||
                     this.tag == TiffIFD.XMP) {
-                    ByteStreamSource bss = new ByteStreamSource(jhove2, source, this.valueOffset, this.count);
+                    ByteStreamSource bss = jhove2.getSourceFactory().getByteStreamSource(
+                    	jhove2, source, this.valueOffset, this.count);
                     Format format = tagToFormatMap.get(this.tag);
                     I8R identifier = format.getIdentifier();
                     FormatIdentification presumptiveFormat = new FormatIdentification(identifier, Confidence.PositiveSpecific); 
@@ -546,8 +551,8 @@ implements Comparable<Object> {
         else if (this.tag == TiffIFD.PHOTMETRIC_INTERPRETATION) {
             int photometricInterpretation = ((Short) this.getValue()).getValue();
             if (photometricInterpretation == 5 ||  //(CMYK)
-                photometricInterpretation == 6 ||  //(YCbCr)
-                photometricInterpretation == 8) {  //(CIE L*a*b*)
+                    photometricInterpretation == 6 ||  //(YCbCr)
+                    photometricInterpretation == 8) {  //(CIE L*a*b*)
                 if (version < 6)
                     version = 6;
             }   
@@ -692,6 +697,7 @@ implements Comparable<Object> {
              */
             return;
         }
+
 
         boolean match = false;
         for (String expectedEntry:expectedTypes){
@@ -950,8 +956,7 @@ implements Comparable<Object> {
     public TiffType getTiffType(){
         return this.tiffType;
     }
-
-
+    
     /**
      * The value read from the type field for this tag
      * @return long

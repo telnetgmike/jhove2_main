@@ -113,7 +113,8 @@ public class ICCModuleTestBase {
         File testFile = new File(iccExampleDirPath, relativePath);
         assertTrue(testFile.exists());
         try {
-            FileSource fileSource = new FileSource(testFile);
+            FileSource fileSource = /* new FileSource(testFile); */
+                (FileSource) JHOVE2.getSourceFactory().getSource(testFile);
             Input input = fileSource.getInput(this.JHOVE2);
             this.testIccModule.parse(this.JHOVE2, fileSource, input);
         }

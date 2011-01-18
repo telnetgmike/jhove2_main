@@ -83,6 +83,11 @@ package org.jhove2.module.format.sgml;
   boolean lexFoundPubid = false;
   boolean lexFoundSysid = false;
 }
+@lexer::members{
+  boolean inDocType = false;
+  boolean lexFoundPubid = false;
+  boolean lexFoundSysid = false;
+}
 
 /**
 This grammar is a recognizer for the output of the OpenSp sgmlnorm command.  It is intended to discover the

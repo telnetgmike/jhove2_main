@@ -37,7 +37,6 @@
 
 package org.jhove2.module.assess;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -253,7 +253,7 @@ extends AbstractReportable {
             this.nextIFD = 0L;
         }
         catch (EOFException e) {
-            throw new JHOVE2Exception("Premature EOF" + offsetInIFD, e);
+            throw new EOFException("Premature EOF" + offsetInIFD);
         }
 
         try {
@@ -284,7 +284,7 @@ extends AbstractReportable {
             }
         }
         catch (IOException e) {
-            throw new JHOVE2Exception ("IOException while reading IFD " + (offset + 2), e);
+            throw new IOException ("IOException while reading IFD " + (offset + 2), e);
         }
     }
 
@@ -312,7 +312,7 @@ extends AbstractReportable {
      * @throws FileNotFoundException 
      * @throws JHOVE2Exception 
      */
-    abstract Validity validate(JHOVE2 jhove2, Source source) throws JHOVE2Exception, FileNotFoundException, IOException;
+    abstract Validity validate(JHOVE2 jhove2, Source source, Input input) throws JHOVE2Exception, FileNotFoundException, IOException;
 
 
 }

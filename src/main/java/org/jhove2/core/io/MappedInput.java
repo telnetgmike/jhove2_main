@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import org.jhove2.core.JHOVE2;
+import org.jhove2.core.io.Input.Type;
 
 /**
  * JHOVE2 mapped inputable. A direct byte buffer whose content is a
@@ -55,33 +57,29 @@ public class MappedInput
 {
 	/**
 	 * Instantiate a new, big-endian <code>MappedInput</code> object.
-	 * 
+	 * @param jhove2 JHOVE2 framework object
 	 * @param file
 	 *            Java {@link java.io.File} underlying the inputable
-     * @param deleteOnClose
-     *            Temporary file deletion status: true if delete on close
-	 * @param maxBufferSize
-	 *            Size of the mapped byte buffer, in bytes
+     * @param isTemp
+     *            Temporary file status: true if temporary
 	 * @throws FileNotFoundException
 	 *             File not found
 	 * @throws IOException
 	 *             I/O exception instantiating input
 	 */
-	public MappedInput(File file, boolean deleteOnClose, int maxBufferSize)
+	public MappedInput(JHOVE2 jhove2, File file, boolean isTemp)
 		throws FileNotFoundException, IOException
 	{
-		this(file, deleteOnClose, maxBufferSize, ByteOrder.BIG_ENDIAN);
+		this(jhove2, file, isTemp, ByteOrder.BIG_ENDIAN);
 	}
 
 	/**
 	 * Instantiate a new <code>MappedInput</code> object.
-	 * 
+	 * @param jhove2 JHOVE2 framework object
 	 * @param file
 	 *            Java {@link java.io.File} underlying the inputable
-     * @param deleteOnClose
-     *            Temporary file deletion status: true if delete on close
-	 * @param maxBufferSize
-	 *            Size of the mapped byte buffer, in bytes
+	 * @param isTemp
+	 *            Temporary file status: true if temporary
 	 * @param order
 	 *            Byte order
 	 * @throws FileNotFoundException
@@ -89,11 +87,11 @@ public class MappedInput
 	 * @throws IOException
 	 *             I/O exception instantiating input
 	 */
-	public MappedInput(File file, boolean deleteOnClose, int maxBufferSize,
-	                   ByteOrder order)
+	public MappedInput(JHOVE2 jhove2, File file, boolean isTemp, ByteOrder order)
 		throws FileNotFoundException, IOException
 	{
-		super(file, deleteOnClose, maxBufferSize, order);
+		super(jhove2, file, isTemp, order);
+        this.bufferType = Type.Mapped;
 
 		/* Allocate memory mapped buffer and initialize it.
 		*  The buffer size will always be size of file channel size.

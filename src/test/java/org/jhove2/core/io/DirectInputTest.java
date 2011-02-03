@@ -46,13 +46,14 @@ import java.nio.ByteOrder;
 import javax.annotation.Resource;
 
 import org.jhove2.app.util.FeatureConfigurationUtil;
+import org.jhove2.core.Invocation;
+import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
 import org.jhove2.core.io.Input.Type;
 import org.jhove2.core.source.Source;
 import org.jhove2.core.source.SourceFactory;
 import org.jhove2.persist.inmemory.InMemorySourceFactory;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,11 +76,15 @@ public class DirectInputTest {
     private String utf8DirBasePath;
     private String testFile01;
     private File testFile;
-
+	private JHOVE2 jhove2;
 
     @Before
     public void setUp() throws Exception {
         bufferSize = 100;
+        jhove2 = new JHOVE2();
+        Invocation inv = jhove2.getInvocation();
+        inv.setBufferSize(bufferSize);
+        inv.setBufferType(Type.Direct);
         String utf8DirPath = null;
         try {
             utf8DirPath = 
@@ -96,36 +101,18 @@ public class DirectInputTest {
     public void tearDown() throws Exception {
     }
 
-    /**
-     * One time clean up code to close the input
-     */
-    @AfterClass
-    public static void oneTimeTearDown() {
-        try {
-            if (abstractInput != null) {
-                abstractInput.close();
-            }
-        }
-        catch (IOException e) {
-            fail(e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     @Test
     public void testGetInput() throws JHOVE2Exception {
 
         try {
 			SourceFactory factory = new InMemorySourceFactory();
-			Source source = factory.getSource(testFile);
-			abstractInput = source.getInput(bufferSize, Type.Direct, ByteOrder.LITTLE_ENDIAN);// ,
+			Source source = factory.getSource(jhove2, testFile);
+			abstractInput = source.getInput(jhove2, ByteOrder.LITTLE_ENDIAN);// ,
             // ByteOrder.LITTLE_ENDIAN);
             assertTrue("AbstractInput Scope is Direct with LITTLE_ENDIAN",
                     abstractInput.getBuffer().order() == ByteOrder.LITTLE_ENDIAN);
             abstractInput.close();
-			abstractInput = InputFactory.getInput(testFile,
-			        (source.isTemp() && source.getDeleteTempFiles()),
-			        bufferSize,	Type.Direct);
+			abstractInput = InputFactory.getInput(jhove2, testFile, source.isTemp());
             assertTrue("AbstractInput Scope is Direct", abstractInput.getClass()
                     .getName().equalsIgnoreCase(DirectInput.class.getName()));
             abstractInput.setByteOrder(ByteOrder.BIG_ENDIAN);
@@ -143,13 +130,6 @@ public class DirectInputTest {
     public void testGetBuffer() {
         Buffer buffer = abstractInput.getBuffer();
         assertTrue("Buffer returned is null", buffer != null);
-    }
-
-    @Test
-    public void testGetFile() {
-        File inputableFile = abstractInput.getFile();
-        assertTrue("File is not same as abstractInput", testFile.getName()
-                .equals(inputableFile.getName()));
     }
 
     @Test
@@ -193,7 +173,8 @@ public class DirectInputTest {
     @Test
     public void testGetByteArray() {
         byte[] byteArray = abstractInput.getByteArray();
-        assertTrue("ByteArray not equal to buffersize",
+		assertTrue("ByteArray not equal to buffersize: " + byteArray.length + "=" +
+		        bufferSize,
                 byteArray.length == bufferSize);
     }
 
@@ -216,8 +197,7 @@ public class DirectInputTest {
              * test that the last buffer read returns expected number of bytes
              */
             abstractInput.setPosition(0);
-            File inFile = abstractInput.getFile();
-            long size = inFile.length();
+			long size = testFile.length();
             long lastBufferSizeChunk = size
             - ((size / bufferSize) * bufferSize);
             for (int i = 0; i < size / bufferSize; i++) {

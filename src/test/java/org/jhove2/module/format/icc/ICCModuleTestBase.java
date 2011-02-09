@@ -49,6 +49,8 @@ import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
 import org.jhove2.core.io.Input;
 import org.jhove2.core.source.FileSource;
+import org.jhove2.persist.PersistenceManager;
+import org.jhove2.persist.PersistenceManagerUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -99,8 +101,12 @@ public class ICCModuleTestBase {
     }
 
     protected void parse(String relativePath) {
+        PersistenceManager persistenceManager = null;
         String iccExampleDirPath = null;
         try {
+            PersistenceManagerUtil.createPersistenceManagerFactory(JHOVE2.getConfigInfo());
+            persistenceManager = PersistenceManagerUtil.getPersistenceManagerFactory().getInstance();
+            persistenceManager.initialize();
             iccExampleDirPath =
                 FeatureConfigurationUtil.getFilePathFromClasspath(this.iccDirBasePath,
                                                                   "ICC examples base directory");
@@ -108,13 +114,17 @@ public class ICCModuleTestBase {
         catch (JHOVE2Exception e1) {
             fail("Could not create base directory");
         }
+        catch (Exception e) {
+            e.printStackTrace();
+            fail("exception");
+        }
         File iccExampleDir = new File(iccExampleDirPath);
         assertTrue(iccExampleDir.exists());
         File testFile = new File(iccExampleDirPath, relativePath);
         assertTrue(testFile.exists());
         try {
             FileSource fileSource = /* new FileSource(testFile); */
-                (FileSource) JHOVE2.getSourceFactory().getSource(testFile);
+                (FileSource) JHOVE2.getSourceFactory().getSource(JHOVE2, testFile);
             Input input = fileSource.getInput(this.JHOVE2);
             this.testIccModule.parse(this.JHOVE2, fileSource, input);
         }

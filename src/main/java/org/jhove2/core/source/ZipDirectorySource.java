@@ -36,7 +36,7 @@
 
 package org.jhove2.core.source;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 
@@ -52,16 +52,13 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public class ZipDirectorySource
     extends AbstractSource
-    implements AggregateSource, NamedSource
+    implements NamedSource
 {
 	/** Zip directory comment. */
 	protected String comment;
 
 	/** Zip directory last modified date. */
 	protected Date lastModified;
-
-	/** Zip directory name. */
-	protected String name;
 
 	/** Zip directory path. */
 	protected String path;
@@ -71,25 +68,18 @@ public class ZipDirectorySource
 	}
 	/**
 	 * Instantiate a new <code>ZipDirectorySource</code>.
-	 * 
-	 * @param stream
-	 *            Input stream for the Zip directory entry
-	 * @param entry
-	 *            Zip directory entry
+     * @param entry
+     *            Zip directory entry
 	 */
-	protected ZipDirectorySource(InputStream stream, ZipEntry entry) {
+	protected ZipDirectorySource(ZipEntry entry) {
 		super();
 
+		this.isAggregate = true;
 		this.path = entry.getName();
-		/* Directory name has a trailing slash (/). */
-		int in = this.path.lastIndexOf('/');
+		/* Delete trailing slash (/), if found. */
+		int in = this.path.lastIndexOf(File.separator);
 		if (in == this.path.length() - 1) {
 			this.path = this.path.substring(0, in);
-		}
-		this.name = this.path;
-		in = this.name.lastIndexOf('/');
-		if (in > -1) {
-			this.name = this.name.substring(in + 1);
 		}
 		this.lastModified = new Date(entry.getTime());
 		this.comment = entry.getComment();
@@ -116,14 +106,14 @@ public class ZipDirectorySource
 	}
 
 	/**
-	 * Get Zip directory name.
+	 * Get Zip directory source name.
 	 * 
-	 * @return Zip directory name
+	 * @return Zip directory source name
 	 * @see org.jhove2.core.source.NamedSource#getSourceName()
 	 */
 	@Override
 	public String getSourceName() {
-		return this.name;
+		return this.path;
 	}
 
 	/**
@@ -204,7 +194,6 @@ public class ZipDirectorySource
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result
                 + ((lastModified == null) ? 0 : lastModified.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         return result;
     }

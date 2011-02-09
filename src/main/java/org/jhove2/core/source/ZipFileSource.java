@@ -39,17 +39,17 @@ package org.jhove2.core.source;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteOrder;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 
 import org.jhove2.annotation.ReportableProperty;
 import org.jhove2.core.Digest;
+import org.jhove2.core.JHOVE2;
 import org.jhove2.core.io.Input;
 import org.jhove2.core.io.InputFactory;
-import org.jhove2.core.io.Input.Type;
 import org.jhove2.module.digest.AbstractArrayDigester;
 import org.jhove2.module.digest.CRC32Digester;
-
 
 import com.sleepycat.persist.model.Persistent;
 
@@ -61,21 +61,24 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public class ZipFileSource
     extends AbstractSource
-    implements NamedSource
+    implements MensurableSource, NamedSource
 {
 	/** CRC message digest value recorded in the ZipEntry. */
 	protected long crc;
+	
 	/** Zip file CRC-32 message digest. */
 	protected Digest crc32;
 
 	/** Zip file comment. */
 	protected String comment;
+	
+    /** Ending offset, in bytes, relative to the parent source.  If there is
+     * no parent, the ending offset is the size.
+     */
+    protected long endingOffset;
 
 	/** Zip file last modified date. */
 	protected Date lastModified;
-
-	/** Zip file name. */
-	protected String name;
 
 	/** Zip file path. */
 	protected String path;
@@ -83,12 +86,17 @@ public class ZipFileSource
 	/** Zip file size, in bytes. */
 	protected long size;
 
+    /** Starting offset, in bytes, relative to the parent source.  If there is
+     * no parent, the starting offset is 0.
+     */
+    protected long startingOffset;
+
 	protected ZipFileSource(){
 		super();
 	}
 	/**
 	 * Instantiate a new <code>ZipFileSource</code>.
-	 * 
+	 * @param tmpDirectory Temporary directory
      * @param tmpPrefix Temporary file prefix
      * @param tmpSuffix Temporary file suffix
      * @param bufferSize Buffer size 
@@ -98,21 +106,30 @@ public class ZipFileSource
 	 *            Zip file entry
 	 * @throws IOException
 	 */
-	protected ZipFileSource(String tmpPrefix, String tmpSuffix,
-			int bufferSize, InputStream stream, ZipEntry entry)
-			throws IOException {
-		super(tmpPrefix, tmpSuffix, bufferSize, stream);
+	protected ZipFileSource(JHOVE2 jhove2, ZipEntry entry, InputStream stream)
+		throws IOException
+	{
+		super(jhove2, stream, entry.getName());
 		this.path = entry.getName();
-		this.name = this.path;
-		int in = this.name.lastIndexOf('/');
-		if (in > -1) {
-			this.name = this.name.substring(in + 1);
-		}
 		this.size = entry.getSize();
 		this.lastModified = new Date(entry.getTime());
 		this.crc = entry.getCrc();
 		this.crc32 = new Digest(AbstractArrayDigester.toHexString(this.crc), CRC32Digester.ALGORITHM);
 		this.comment = entry.getComment();
+		
+		/* This is a temporary fix.  We need to keep the temporary backing
+		 * files for Zip components in case we need to later get an
+		 * {@link java.io.InputStream} on the component
+		 * (Source.getInputStream()) to pass to a third-party package that
+		 * doesn't support {@link org.jhove2.core.io.Input}s.
+		 * 
+		 * Note that the temporary files will accumulate in the temporary
+		 * directory after termination.
+		 * 
+		 * TODO: Find a better mechanism for dealing with this problem
+		 * in the recursive processing model.
+		 */
+		this.deleteOnClose = false;
 	}
 
 	/**
@@ -124,7 +141,15 @@ public class ZipFileSource
 	public String getComment() {
 		return this.comment;
 	}
-
+	   
+    /**
+     * CRC value recorded in ZipEntry
+     * @return CRC value
+     */
+    public long getCRC() {
+        return crc;
+    }
+    
 	/**
 	 * Get Zip file CRC-32 message digest.
 	 * 
@@ -135,22 +160,47 @@ public class ZipFileSource
 		return this.crc32;
 	}
 
-	/**
-	 * Get {@link org.jhove2.core.io.Input} for the Zip file.
-	 * 
-	 * @param bufferSize
-	 *            Input buffer size
-	 * @param bufferType
-	 *            Input buffer type
-	 * @return Input for the source unit
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	public Input getInput(int bufferSize, Type bufferType)
-			throws FileNotFoundException, IOException {
-		return InputFactory.getInput(this.file, bufferSize, bufferType);
-	}
+    /** Get ending offset of the source unit, in bytes, relative to the
+     * parent source.  If there is no parent, the ending offset is the
+     * size.
+     * @return Starting offset of the source unit
+     */
+    @Override
+    public long getEndingOffset() {
+        return this.endingOffset;
+    }
 
+    /**
+     * Create and get {@link org.jhove2.core.io.Input} for the source unit. Concrete
+     * classes extending this abstract class must provide an implementation of
+     * this method if they are are based on parsable input. Classes without
+     * parsable input (e.g. {@link org.jhove2.core.source.ClumpSource} or
+     * {@link org.jhove2.core.source.DirectorySource} can let this inherited
+     * method return null.
+     * 
+     * TODO: This override is only necessary to set the Input delete-on-close
+     * flag to the the Source flag.  Once we have a better way to maintain the
+     * temporary files for Zip components, this method can be removed.
+     * 
+     * @param jhove2 JHOVE2 framework object
+     * @param order
+     *            Byte order
+     * @return null
+     * @throws FileNotFoundException
+     *             File not found
+     * @throws IOException
+     *             I/O exception getting input
+     */
+    @Override
+    public Input getInput(JHOVE2 jhove2, ByteOrder order)
+        throws FileNotFoundException, IOException
+    {
+        Input input = InputFactory.getInput(jhove2, this.file, this.isTemp, order);
+        /* Set the Input delete-on-close flag to the Source flag. */
+        input.setDeleteTempOnClose(this.deleteOnClose);
+        return input;
+    }
+    
 	/**
 	 * Get Zip file last modified date.
 	 * 
@@ -159,17 +209,6 @@ public class ZipFileSource
 	@ReportableProperty(order = 3, value = "Zip file last modified date.")
 	public Date getLastModified() {
 		return this.lastModified;
-	}
-
-	/**
-	 * Get Zip file name.
-	 * 
-	 * @return Zip file name
-	 * @see org.jhove2.core.source.NamedSource#getSourceName()
-	 */
-	@Override
-	public String getSourceName() {
-		return this.name;
 	}
 
 	/**
@@ -191,14 +230,27 @@ public class ZipFileSource
 	public long getSize() {
 		return this.size;
 	}
-	/**
-	 * CRC value recorded in ZipEntry
-	 * @return CRC value
-	 */
-	public long getCrc() {
-		return crc;
-	}
-	
+
+    /**
+     * Get Zip file name.
+     * 
+     * @return Zip file name
+     * @see org.jhove2.core.source.NamedSource#getSourceName()
+     */
+    @Override
+    public String getSourceName() {
+        return this.path;
+    }
+
+    /** Get starting offset of the source unit, in bytes, relative to the
+     * parent source.  If there is no parent, the starting offset is 0.
+     * @return Starting offset of the source unit
+     */
+    @Override
+    public long getStartingOffset() {
+        return this.startingOffset;
+    }
+ 
 	/** Equality comparison.
 	 * @oparam obj The object being compared
 	 * @return True if the object is equal
@@ -253,7 +305,7 @@ public class ZipFileSource
 		if (!equals){
 			return false;
 		}
-		equals = this.getCrc()==zObj.getCrc();
+		equals = this.getCRC()==zObj.getCRC();
 		if (!equals){
 			return false;
 		}
@@ -277,7 +329,6 @@ public class ZipFileSource
         result = prime * result + ((crc32 == null) ? 0 : crc32.hashCode());
         result = prime * result
                 + ((lastModified == null) ? 0 : lastModified.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + (int) (size ^ (size >>> 32));
         return result;
@@ -354,10 +405,10 @@ public class ZipFileSource
 				return 1;
 			}
 		}
-		if (this.getCrc()< zObj.getCrc()){
+		if (this.getCRC()< zObj.getCRC()){
 			return -1;
 		}
-		else if (this.getCrc()>zObj.getCrc()){
+		else if (this.getCRC()>zObj.getCRC()){
 			return 1;
 		}
 		if (this.getSize()< zObj.getSize()){

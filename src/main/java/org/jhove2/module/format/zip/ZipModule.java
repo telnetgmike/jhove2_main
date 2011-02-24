@@ -42,8 +42,10 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -53,6 +55,7 @@ import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
 import org.jhove2.core.format.Format;
 import org.jhove2.core.io.Input;
+import org.jhove2.core.source.FileSetSource;
 import org.jhove2.core.source.Source;
 import org.jhove2.core.source.SourceFactory;
 import org.jhove2.module.format.BaseFormatModule;
@@ -183,9 +186,15 @@ public class ZipModule
 	                    	factory.getSource(jhove2, zip, entry);
 	                    if (src != null) {
 	                        String key = entry.getName();
-	                        /* Remove trailing slash. */
+	                        /* Remove trailing slash. Although this always
+	                         * should be a forward slash (/), in practice a
+	                         * backward slash (\) may be found. */
 	                        int len = key.length() - 1;
-	                        if (key.charAt(len) == '/') {
+	                        char ch = key.charAt(len);
+	                        if (ch == '/') {
+	                            key = key.substring(0, len);
+	                        }
+	                        else if (ch == '\\') {
 	                            key = key.substring(0, len);
 	                        }
 	                        map.put(key, src);
@@ -194,32 +203,39 @@ public class ZipModule
 	            }
 
 	            /*
-	             * Characterize each entry and associate it with its parent
-	             * source unit.
+	             * Characterize each file entry and associate it with its parent
+	             * source unit.  Directory entries are not characterized now,
+	             * since all of their child files may not yet be associated
+	             * with them.
 	             */
 	            en = zip.entries();
 	            while (en.hasMoreElements()) {
 	                ZipEntry entry = en.nextElement();
 	                String name = entry.getName();
 	                if (entry.isDirectory()) {
+                        /* Remove trailing slash. Although this always should
+                         * be a forward slash (/), in practice a backward
+                         * slash (\) may be found. */
 	                    int len = name.length() - 1;
-	                    if (name.charAt(len) == '/') {
+	                    char ch = name.charAt(len);
+	                    if (ch == '/') {
 	                        name = name.substring(0, len);
 	                    }
-	                    /* Get the source unit from the map. */
+	                    else if (ch == '\\') {
+	                        name = name.substring(0, len);
+	                    }
+	                    /* Get the directory source unit from the map. */
 	                    Source src = map.get(name);
-	                    if (src != null) {
-	                        Input inpt = src.getInput(jhove2);
-	                        try {
-	                            src = jhove2.characterize(src, inpt);
-	                        }
-	                        finally {
-	                            if (inpt != null) {
-	                                inpt.close();
-	                            }
-	                        }
-	                        
+	                    if (src != null) {	                        
+	                        /* Check if the pathname includes a directory
+	                         * component. Although the path separator always
+	                         * should be a forward slash (/), in practice a
+	                         * backward slash (\) may be found.
+	                         */
 	                        int in = name.lastIndexOf('/');
+	                        if (in < 0) {
+	                            in = name.lastIndexOf('\\');
+	                        }
 	                        if (in > -1 && in < name.length() - 1) {
 	                            /*
 	                             * Directory is a child of a Zip directory
@@ -227,9 +243,18 @@ public class ZipModule
 	                             */
 	                            String key = name.substring(0, in);
 	                            Source parent = map.get(key);
-	                            if (parent != null) {
-	                            	src = parent.addChildSource(src);
-	                            }
+	                            if (parent == null) {
+                                    /* The directory pathname includes a parent
+                                     * directory, but that directory is not a
+                                     * Zip entry. Create a FileSetSource, a
+                                     * child of the Zip file and the parent of
+                                     * this file, to represent the directory. 
+                                     */
+                                    parent = jhove2.getSourceFactory().getFileSetSource();
+                                    parent = source.addChildSource(parent);
+                                    map.put(key, parent);
+                                }
+	                            src = parent.addChildSource(src);
 	                        }
 	                        else {
 	                            /* Directory is a child of the Zip file. */
@@ -241,17 +266,23 @@ public class ZipModule
 	                    Source src =
 	                    	factory.getSource(jhove2, zip, entry);
 	                    if (src != null) {
-	                        Input inpt = src.getInput(jhove2);
-	                        try {
-	                            src = jhove2.characterize(src, inpt);
-	                        }
-	                        finally {
-	                            if (inpt != null) {
-	                                inpt.close();
-	                            }
-	                        }
+	                        /* Some FileSources may be children of a FileSetSource
+	                         * if the filename includes a directory that is not
+	                         * a Zip entry.  These FileSetSources should not be
+	                         * characterized now, since we'll characterize the
+	                         * FileSet later, including its children.
+	                         */
+	                        boolean hasFileSetParent = false;
 
+	                        /* Check if the pathname includes a directory
+	                         * component. Although the path separator always
+	                         * should be a forward slash (/), in practice a
+	                         * backward slash (\) may be found.
+	                         */
 	                        int in = name.lastIndexOf('/');
+	                        if (in < 0) {
+	                            in = name.lastIndexOf('\\');
+	                        }
 	                        if (in < 0) {
 	                            /* File is a child of the Zip file. */
 	                        	src = source.addChildSource(src);
@@ -263,10 +294,67 @@ public class ZipModule
 	                            String key = name.substring(0, in);
 	                            Source parent = map.get(key);
 	                            if (parent != null) {
-	                            	src = parent.addChildSource(src);
+	                                if (parent instanceof FileSetSource) {
+	                                    hasFileSetParent = true;
+	                                }
 	                            }
+	                            else {
+	                                hasFileSetParent = true;
+	                                /* The filename includes a parent directory,
+	                                 * but that directory is not a Zip entry.
+	                                 * Create a FileSetSource, a child of the
+	                                 * Zip file and the parent of this file, to
+	                                 * represent the directory. 
+	                                 */
+	                                parent = jhove2.getSourceFactory().getFileSetSource();
+	                                parent = source.addChildSource(parent);
+                                    map.put(key, parent);
+	                            }
+	                            src = parent.addChildSource(src);
 	                        }
+	                        /* Only characterize sources that are not children
+	                         * of a FileSetSource.
+	                         */
+	                        if (!hasFileSetParent) {
+	                            /* Make sure to close the Input after
+	                             * characterization is completed.
+	                             */
+	                            Input inpt = src.getInput(jhove2);
+	                            try {
+	                                src = jhove2.characterize(src, inpt);
+	                            }
+	                            finally {
+	                                if (inpt != null) {
+	                                    inpt.close();
+	                                }
+                                }
+                            }
 	                    }
+	                }
+	            }
+	            /* Make sure to characterize any ZipDirectory and FileSet
+	             * sources (that were created to represent non-Zip-entry
+	             * directories) in the map, since they weren't characterized
+	             * previously.
+	             */
+	            Set<String> set = map.keySet();
+	            Iterator<String> iter = set.iterator();
+	            while (iter.hasNext()) {
+	                String key = iter.next();
+	                Source src = map.get(key);
+	                if (src != null) {
+                        /* Make sure to close the Input after
+                         * characterization is completed.
+                         */
+	                    Input inpt = src.getInput(jhove2);
+                        try {
+                            src = jhove2.characterize(src, inpt);
+                        }
+                        finally {
+                            if (inpt != null) {
+                                inpt.close();
+                            }
+                        }
 	                }
 	            }
 	        }  

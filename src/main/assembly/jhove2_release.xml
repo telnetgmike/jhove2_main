@@ -1,0 +1,59 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+	<id>dist</id>
+	<formats>
+		<format>tar.gz</format>
+		<format>zip</format>
+	</formats>
+	<fileSets>
+		<!--  move scripts and transforms dir into assembly -->
+		<fileSet>
+			<directory>${project.basedir}/src/main/scripts</directory>
+			<includes>
+				<include>*.cmd</include>
+				<include>*.sh</include>
+				<!-- 
+				<include>transforms/*.xsl</include>
+				 -->
+			</includes>
+			<outputDirectory>/</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<!--  move licenses into assembly -->
+		<fileSet>
+			<directory>${project.basedir}/src/main/resources</directory>
+			<includes>
+				<include>*.txt</include>
+			</includes>
+			<outputDirectory>/licenses/</outputDirectory>
+		</fileSet>
+		<!--  move src dir, config dir and pom.xml into assembly -->
+		<fileSet>
+			<!--  move src dir and all top level files into assembly -->
+			<directory>${project.basedir}</directory>
+			<includes>
+				<include>${project.basedir}/src/**</include>
+				<include>${project.basedir}/config/**</include>
+				<include>pom.xml</include>
+			</includes>
+			<!-- exclude SVN files -->
+			<useDefaultExcludes>true</useDefaultExcludes>
+		</fileSet>
+		<!-- add the javadoc -->
+		<fileSet>
+			<directory>${project.build.directory}/site/apidocs</directory>
+			<includes>
+			</includes>
+			<outputDirectory>/docs</outputDirectory>
+		</fileSet>
+	</fileSets>
+
+	<!-- copy all project dependencies to lib/ -->
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/lib</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+</assembly>

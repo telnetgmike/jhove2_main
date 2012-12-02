@@ -47,6 +47,7 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
+import org.jhove2.ConfigTestBase;
 import org.jhove2.app.util.FeatureConfigurationUtil;
 import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
@@ -70,10 +71,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath*:**/test-config.xml", 
-"classpath*:**/filepaths-config.xml"})
+@ContextConfiguration(locations={
+		"classpath*:**/test-config.xml", 
+		"classpath*:**/persist-test-config.xml",
+		"classpath*:**/filepaths-config.xml"})
 
-public class OpenSpWrapperWindowsExeTest {
+public class OpenSpWrapperWindowsExeTest extends ConfigTestBase{
 	protected JHOVE2 JHOVE2;
 	protected SgmlModule wtestSgmlModule;
 	protected String catalogFile;
@@ -97,49 +100,51 @@ public class OpenSpWrapperWindowsExeTest {
 		if (os.toLowerCase().startsWith("win")){
 			isWindows = true;
 		}
-		sp = (OpenSpWrapper) wtestSgmlModule.sgmlParser;
-		try {
-			sgmlDirPath = 
-				FeatureConfigurationUtil.getFilePathFromClasspath(sgmlDirBasePath, "temp dir");
-		} catch (JHOVE2Exception e1) {
-			fail("Could not create base directory");
-		}
-		File fsgml = new File(sgmlDirPath);
-		sgmlDirPath = fsgml.getPath();
-		if (sp.filepathFilter != null){
-			sgmlDirPath = sp.filepathFilter.filter(sgmlDirPath);
-		}
-		catalogPath = sgmlDirPath.concat(catalogFile);
-		File cFile = new File (catalogPath);
-		if (!cFile.exists()){
-			fail("Path to catalog file " + catalogPath + " does not exist");
-		}
-		catalogPath = cFile.getAbsolutePath();
-		if (sp.filepathFilter != null){
-			catalogPath = sp.filepathFilter.filter(catalogPath);
-		}
-		sp.getOnsgmlsOptions().setCatalogPath(catalogPath);
-		sp.getSgmlnormOptions().setCatalogPath(catalogPath);
-		String commandPath = sp.getOnsgmlsPath();
-		File commandPathFile = null;
-		try {
-			commandPathFile = new File(commandPath);
-			if (!(commandPathFile.exists())){
-				fail("Configured path to ongsmls utility " + commandPath + " does not exist");
+		if (isWindows){
+			sp = (OpenSpWrapper) wtestSgmlModule.sgmlParser;
+			try {
+				sgmlDirPath = 
+					FeatureConfigurationUtil.getFilePathFromClasspath(sgmlDirBasePath, "temp dir");
+			} catch (JHOVE2Exception e1) {
+				fail("Could not create base directory");
 			}
-		}
-		catch (NullPointerException e){
-			fail("no path to onsgmls utility configured");
-		}
-		commandPath = sp.getSgmlnormPath();
-		try {
-			commandPathFile = new File(commandPath);
-			if (!(commandPathFile.exists())){
-				fail("Configured path to sgmlNorm utility " + commandPath + " does not exist");
+			File fsgml = new File(sgmlDirPath);
+			sgmlDirPath = fsgml.getPath();
+			if (sp.filepathFilter != null){
+				sgmlDirPath = sp.filepathFilter.filter(sgmlDirPath);
 			}
-		}
-		catch (NullPointerException e){
-			fail("no path to onsgmls utility configured");
+			catalogPath = sgmlDirPath.concat(catalogFile);
+			File cFile = new File (catalogPath);
+			if (!cFile.exists()){
+				fail("Path to catalog file " + catalogPath + " does not exist");
+			}
+			catalogPath = cFile.getAbsolutePath();
+			if (sp.filepathFilter != null){
+				catalogPath = sp.filepathFilter.filter(catalogPath);
+			}
+			sp.getOnsgmlsOptions().setCatalogPath(catalogPath);
+			sp.getSgmlnormOptions().setCatalogPath(catalogPath);
+			String commandPath = sp.getOnsgmlsPath();
+			File commandPathFile = null;
+			try {
+				commandPathFile = new File(commandPath);
+				if (!(commandPathFile.exists())){
+					fail("Configured path to ongsmls utility " + commandPath + " does not exist");
+				}
+			}
+			catch (NullPointerException e){
+				fail("no path to onsgmls utility configured");
+			}
+			commandPath = sp.getSgmlnormPath();
+			try {
+				commandPathFile = new File(commandPath);
+				if (!(commandPathFile.exists())){
+					fail("Configured path to sgmlNorm utility " + commandPath + " does not exist");
+				}
+			}
+			catch (NullPointerException e){
+				fail("no path to onsgmls utility configured");
+			}
 		}
 	}
 
@@ -215,13 +220,13 @@ public class OpenSpWrapperWindowsExeTest {
 
 	public void testParseFile02() {
 		if (isWindows){
-		
+
 			wtestSgmlModule02.setDocumentProperties(null);
 			String badFilePath = sgmlDirBasePath.concat(invalidSgmlFile);
 			try {
 				badFilePath = 
 					FeatureConfigurationUtil.getFilePathFromClasspath(badFilePath, 
-					"invalid sgm file");
+							"invalid sgm file");
 			} catch (JHOVE2Exception e1) {
 				fail("Could not create base directory");
 			}
@@ -346,7 +351,7 @@ public class OpenSpWrapperWindowsExeTest {
 	public void setTestSgmlModule(SgmlModule testSgmlModule) {
 		this.wtestSgmlModule = testSgmlModule;
 	}
-	
+
 	/**
 	 * @param wtestSgmlModule the wtestSgmlModule to set
 	 */

@@ -36,24 +36,38 @@ package org.jhove2.config.spring;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import org.jhove2.ConfigTestBase;
 import org.jhove2.core.I8R;
 import org.jhove2.core.JHOVE2Exception;
 import org.jhove2.core.format.Format;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * @author smorrissey
  *
  */
-public class SpringTiff2FormatMapFactoryTest {
+
+public class SpringTiff2FormatMapFactoryTest extends ConfigTestBase {
 
 	SpringTiff2FormatMapFactory factory;
 	String XmlPuid = "fmt/101";
 	int XmlTiffId = 700;
+	
+
+	@BeforeClass 
+	public static void setUpBeforeClass() throws Exception {
+		ArrayList<String> locs = new ArrayList<String>();
+		locs.add("classpath*:**/*test*-config.xml");
+		ConfigTestBase.setCONTEXT_PATHS(locs);
+		ConfigTestBase.setUpBeforeClass();
+	}
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -84,7 +98,7 @@ public class SpringTiff2FormatMapFactoryTest {
 	@Test
 	public void testGetFormat() {
 		Map<String, String> puidToJhoveId = null;
-		SpringConfigInfo configInfo = new SpringConfigInfo();
+		SpringConfigInfo configInfo = new SpringConfigInfo(ConfigTestBase.getCONTEXT_PATHS());
 		try {
 			puidToJhoveId = configInfo.getFormatAliasIdsToJ2Ids(I8R.Namespace.PUID);
 			if (!puidToJhoveId.containsKey(XmlPuid)){

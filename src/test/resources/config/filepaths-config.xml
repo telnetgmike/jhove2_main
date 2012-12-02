@@ -59,9 +59,16 @@
 	        value="examples/wave/"/>
 	</bean>
 	
+	
 	<bean id="xmlDirBasePath" class="java.lang.String" >
 		<constructor-arg type="java.lang.String" 
 	        value="examples/xml/"/>
+	</bean>
+	
+
+	<bean id="messageDirBasePath" class="java.lang.String" >
+		<constructor-arg type="java.lang.String" 
+	        value="examples/messages/"/>
 	</bean>
 	
 	<bean id="arcDirBasePath" class="java.lang.String" >

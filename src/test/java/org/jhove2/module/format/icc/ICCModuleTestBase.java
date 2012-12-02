@@ -41,16 +41,19 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.annotation.Resource;
 
+import org.jhove2.ConfigTestBase;
 import org.jhove2.app.util.FeatureConfigurationUtil;
 import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
 import org.jhove2.core.io.Input;
 import org.jhove2.core.source.FileSource;
-import org.jhove2.persist.PersistenceManager;
 import org.jhove2.persist.PersistenceManagerUtil;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -63,15 +66,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author slabrams
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath*:**/j2test-icc-config.xml",
-        "classpath*:**/test-config.xml", "classpath*:**/filepaths-config.xml" })
+@ContextConfiguration(locations = {
+		"classpath*:**/j2test-icc-config.xml",
+		"classpath*:**/persist-test-config.xml",
+        "classpath*:**/test-config.xml", 
+        "classpath*:**/filepaths-config.xml"})
         
-public class ICCModuleTestBase {
+public class ICCModuleTestBase extends ConfigTestBase {
 
     protected ICCModule testIccModule;
     private JHOVE2 JHOVE2;
     private String iccDirBasePath;
     protected boolean initialized;
+    protected String persistenceFactoryClassName;
 
     public ICCModule getTestIccModule() {
         return this.testIccModule;
@@ -86,7 +93,7 @@ public class ICCModuleTestBase {
         return this.JHOVE2;
     }
 
-    @Resource
+    @Resource (name="JHOVE2")
     public void setJHOVE2(JHOVE2 jhove2) {
         this.JHOVE2 = jhove2;
     }
@@ -99,14 +106,34 @@ public class ICCModuleTestBase {
     public void setIccDirBasePath(String iccDirBasePath) {
         this.iccDirBasePath = iccDirBasePath;
     }
+    
+    @Resource (name="PersistenceManagerFactoryClassName")
+	public void setPersistenceFactoryClassName(String persistenceFactoryClassName) {
+		this.persistenceFactoryClassName = persistenceFactoryClassName;
+	}
+
+    @BeforeClass 
+	public static void setUpBeforeClass() throws Exception {
+    	ArrayList<String> paths = new ArrayList<String>();   	
+    	paths.add("classpath*:**/j2test-icc-config.xml");
+    	paths.add("classpath*:**/persist-test-config.xml");
+    	paths.add("classpath*:**/test-config.xml");
+    	paths.add("classpath*:**/filepaths-config.xml");
+    	ConfigTestBase.setCONTEXT_PATHS(paths);
+    	ConfigTestBase.setUpBeforeClass();
+    } 
+    
+    @Before
+    public void setUp()
+        throws Exception
+    {
+    	PersistenceManagerUtil.createPersistenceManagerFactory(persistenceFactoryClassName);
+		PersistenceManagerUtil.getPersistenceManagerFactory().getInstance().initialize();
+    }
 
     protected void parse(String relativePath) {
-        PersistenceManager persistenceManager = null;
         String iccExampleDirPath = null;
         try {
-            PersistenceManagerUtil.createPersistenceManagerFactory(JHOVE2.getConfigInfo());
-            persistenceManager = PersistenceManagerUtil.getPersistenceManagerFactory().getInstance();
-            persistenceManager.initialize();
             iccExampleDirPath =
                 FeatureConfigurationUtil.getFilePathFromClasspath(this.iccDirBasePath,
                                                                   "ICC examples base directory");

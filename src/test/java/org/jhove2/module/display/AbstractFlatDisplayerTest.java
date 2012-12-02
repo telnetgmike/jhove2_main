@@ -37,8 +37,11 @@ package org.jhove2.module.display;
 
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
 import javax.annotation.Resource;
 
+import org.jhove2.ConfigTestBase;
 import org.jhove2.app.util.FeatureConfigurationUtil;
 import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
@@ -47,6 +50,7 @@ import org.jhove2.core.reportable.Reportable;
 import org.jhove2.core.source.Source;
 import org.jhove2.persist.PersistenceManagerUtil;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -59,19 +63,34 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath*:**/abstractdisplayer-config.xml",
-		"classpath*:**/test-config.xml", "classpath*:**/filepaths-config.xml"})
-public class AbstractFlatDisplayerTest {
+@ContextConfiguration(locations={
+		"classpath*:**/abstractdisplayer-config.xml",
+		"classpath*:**/persist-test-config.xml",
+		"classpath*:**/test-config.xml", 
+		"classpath*:**/filepaths-config.xml"})
+
+public class AbstractFlatDisplayerTest extends ConfigTestBase {
 
 	private JHOVE2 JHOVE2;
 	private String utf8DirBasePath;
 	private String testFile01;
+	private String persistenceFactoryClassName;
 
 	@Before
 	public void setUp() throws Exception {
-		PersistenceManagerUtil.createPersistenceManagerFactory(JHOVE2.getConfigInfo());
+		PersistenceManagerUtil.createPersistenceManagerFactory(persistenceFactoryClassName);
 		PersistenceManagerUtil.getPersistenceManagerFactory().getInstance().initialize();
 	}
+	@BeforeClass 
+	public static void setUpBeforeClass() throws Exception {
+    	ArrayList<String> paths = new ArrayList<String>();   	
+    	paths.add("classpath*:**/abstractdisplayer-config.xml");
+    	paths.add("classpath*:**/persist-test-config.xml");
+    	paths.add("classpath*:**/test-config.xml");
+    	paths.add("classpath*:**/filepaths-config.xml");
+    	ConfigTestBase.setCONTEXT_PATHS(paths);
+    	ConfigTestBase.setUpBeforeClass();
+    } 
 	/**
 	 * Test method for {@link org.jhove2.module.display.AbstractDisplayer#display(Reportable)}.
 	 */
@@ -87,6 +106,7 @@ public class AbstractFlatDisplayerTest {
 		try {
 			String filePath = utf8DirPath.concat(testFile01);
 			Source source = JHOVE2.getSourceFactory().getSource(JHOVE2, filePath);
+			source.addModule(JHOVE2);
             Input  input  = source.getInput(JHOVE2);
 			source = JHOVE2.characterize(source,input);
 			Displayer displayer = new XMLDisplayer();
@@ -118,5 +138,12 @@ public class AbstractFlatDisplayerTest {
 	@Resource
 	public void setUtf8DirBasePath(String testDir) {
 		this.utf8DirBasePath = testDir;
+	}
+	/**
+	 * @param persistenceFactoryClassName the persistenceFactoryClassName to set
+	 */
+	@Resource (name="PersistenceManagerFactoryClassName")
+	public void setPersistenceFactoryClassName(String persistenceFactoryClassName) {
+		this.persistenceFactoryClassName = persistenceFactoryClassName;
 	}
 }

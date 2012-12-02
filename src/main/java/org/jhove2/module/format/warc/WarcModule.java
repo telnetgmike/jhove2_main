@@ -204,7 +204,7 @@ public class WarcModule extends BaseFormatModule implements Validator {
         GzipModule gzipMod = null;
         WarcModule warcMod = null;
         Module mod;
-        Source parentSrc = source.getSourceAccessor().retrieveSource(source.getParentSourceId());
+        Source parentSrc = source.getParentSource();
         if (parentSrc != null) {
             List<Module> parentMods = parentSrc.getModules();
             for (int i=0; i<parentMods.size(); ++i) {

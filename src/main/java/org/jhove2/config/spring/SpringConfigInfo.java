@@ -36,6 +36,7 @@
 package org.jhove2.config.spring;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -64,11 +65,13 @@ import com.sleepycat.persist.model.Persistent;
  * @author mstrong, slabrams, smorrissey, rnanders
  */
 @Persistent
-public class SpringConfigInfo
+public class SpringConfigInfo 
     implements ConfigInfo
 {
+	protected static final String DEFAULT_CLASSPATH = "classpath*:**/jhove2-*-config.xml";
+	
 	/** Spring configuration classpath. */
-	public static final String CLASSPATH = "classpath*:**/jhove2-*-config.xml";
+	protected static String[] CLASSPATH;
 
 	/** Spring application context. */
 	@NotPersistent
@@ -76,6 +79,13 @@ public class SpringConfigInfo
 
 	public SpringConfigInfo(){
 		super();
+		String[] cp = {DEFAULT_CLASSPATH};
+		setCLASSPATH(cp);
+	}
+	
+	public SpringConfigInfo(List<String> classpath){
+		this();
+		resetContext(classpath);
 	}
 	
 	@Override
@@ -276,7 +286,7 @@ public class SpringConfigInfo
 	{
 		if (context == null) {
 			ApplicationContext newContext =
-				new ClassPathXmlApplicationContext(CLASSPATH);
+				new ClassPathXmlApplicationContext(SpringConfigInfo.getCLASSPATH());
 			context = newContext;
 		}
 		return context;
@@ -304,4 +314,71 @@ public class SpringConfigInfo
 		}
 		return map;
 	}
+
+	/**
+	 * @return the cLASSPATH
+	 */
+	public static synchronized String[] getCLASSPATH() {
+		return SpringConfigInfo.CLASSPATH;
+	}
+
+	/**
+	 * @param cLASSPATH the cLASSPATH to set
+	 */
+	public static synchronized void setCLASSPATH(String[] cLASSPATH) {
+		String[]oldPath = SpringConfigInfo.CLASSPATH;
+		SpringConfigInfo.CLASSPATH = cLASSPATH;
+		boolean isChanged = false;
+		if (oldPath == null){
+				if (cLASSPATH!=null){
+					isChanged = true;
+				}
+		}
+		else {
+			if (cLASSPATH==null){
+				isChanged=true;
+			}
+			else{
+				if (oldPath.length!=cLASSPATH.length){
+					isChanged=true;
+				}
+				else {
+					for (int i=0; i<oldPath.length;i++){
+						if (!oldPath[i].equals(cLASSPATH[i])){
+							isChanged=true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (isChanged) {               
+			SpringConfigInfo.setContext(null);
+		}
+	}
+
+	/**
+	 * @param context the context to set
+	 */
+	public static synchronized void setContext(ApplicationContext context) {
+		SpringConfigInfo.context = context;
+	}
+	/**
+	 * Reset context to paths in classpath.
+	 * If classpath is empty or null, resets to DEFAULT_CLASSPATH
+	 * @param classpath list of context paths
+	 */
+	public static synchronized void resetContext (List<String> classpath){
+		String[]newClasspath = null;
+		if (classpath != null && classpath.size()>0){
+			newClasspath = new String[classpath.size()];
+			newClasspath = classpath.toArray(newClasspath);			
+		}
+		else {
+			newClasspath = new String[]{DEFAULT_CLASSPATH};
+		}
+		SpringConfigInfo.setCLASSPATH(newClasspath);
+	}
+
+
 }

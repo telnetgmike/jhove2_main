@@ -3,13 +3,16 @@ package org.jhove2.module.format.tiff;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.jhove2.ConfigTestBase;
 import org.jhove2.core.JHOVE2;
 import org.jhove2.core.JHOVE2Exception;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,13 +26,29 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath*:**/test-config.xml",
-        "classpath*:**/tiff-test-config.xml","classpath*:**/filepaths-config.xml"})
-public class TiffTagTest {
+@ContextConfiguration(locations={
+		"classpath*:**/persist-test-config.xml",
+		"classpath*:**/test-config.xml",
+		"classpath*:**/j2test-icc-config.xml",		
+        "classpath*:**/tiff-test-config.xml",
+        "classpath*:**/filepaths-config.xml"})
+public class TiffTagTest extends ConfigTestBase {
 
     private JHOVE2 JHOVE2;
     private Set<TiffTag> tiffTagSet = null;
     private boolean print = false;
+    
+    @BeforeClass 
+	public static void setUpBeforeClass() throws Exception {
+    	ArrayList<String> paths = new ArrayList<String>();   	
+    	paths.add("classpath*:**/j2test-icc-config.xml");
+    	paths.add("classpath*:**/tiff-test-config.xml");
+    	paths.add("classpath*:**/persist-test-config.xml");
+    	paths.add("classpath*:**/test-config.xml");
+    	paths.add("classpath*:**/filepaths-config.xml");
+    	ConfigTestBase.setCONTEXT_PATHS(paths);
+    	ConfigTestBase.setUpBeforeClass();
+    }
 
     @Test
     public void testGetTagIntProperties() {
@@ -80,6 +99,7 @@ public class TiffTagTest {
     public JHOVE2 getJHOVE2() {
         return JHOVE2;
     }
+    
     @Resource (name="JHOVE2")
     public void setJHOVE2(JHOVE2 jHOVE2) {
         JHOVE2 = jHOVE2;

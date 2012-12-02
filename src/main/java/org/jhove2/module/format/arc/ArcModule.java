@@ -215,7 +215,7 @@ public class ArcModule extends BaseFormatModule implements Validator {
         GzipModule gzipMod = null;
         ArcModule arcMod = null;
         Module mod;
-        Source parentSrc = source.getSourceAccessor().retrieveSource(source.getParentSourceId());
+        Source parentSrc = source.getParentSource();
         if (parentSrc != null) {
             List<Module> parentMods = parentSrc.getModules();
             for (int i=0; i<parentMods.size(); ++i) {
